@@ -86,6 +86,25 @@ export const Main = () => {
 
     // Function to handle rating of a user-submitted joke
     const rateUserJoke = (index, rating) => {
+        const jokeRef = ref(db, `Jokes/${age}/${jokeId}/rating`);
+
+        get(jokeRef)
+            .then((snapshot) => {
+                if (snapshot.exists()) {
+                    const currentRating = snapshot.val() || 0;
+
+                    const newRating = currentRating + rating;
+                    set(jokeRef, newRating)
+                        .then(() => {
+                            const updatedUserJokes = [...userJokes];
+                            updatedUserJokes[jokeId].rating = newRating;
+                            setUserJokes(updatedUserJokes);
+                        })
+                        .catch((error) => {
+                            console.error("Error updating rating in Firebase: ", error);
+                        })
+                }
+            })
         const updatedUserJokes = [...userJokes];
         updatedUserJokes[index].rating = rating;
         setUserJokes(updatedUserJokes);
@@ -155,7 +174,7 @@ export const Main = () => {
             {/* Display user-submitted jokes */}
             {/* {(showYoungerJokes || showOlderJokes) && (
                 <div>
-                    <h2>User-Submitted Jokes</h2>
+                    <h2>User-Submitted Jokes</h2>  
                     {userJokes.map((jokeObj, index) => (
                         <div key={index}>
                             <p>{jokeObj.joke}</p>
