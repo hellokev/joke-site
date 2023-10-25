@@ -1,6 +1,8 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getDatabase, set, get, update, remove, ref, child } from "firebase/database";
+import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+import { useNavigate } from 'react-router-dom';
+import { auth } from '../../config/firebase-config';
 
 
 export const Main = () => {
@@ -10,6 +12,7 @@ export const Main = () => {
     const [userJoke, setUserJoke] = useState(""); 
     const [userJokes, setUserJokes] = useState([]); 
     const [jokeId, setJokeId] = useState(0);
+    const navigate = useNavigate();
 
     const db = getDatabase();
 
@@ -27,6 +30,17 @@ export const Main = () => {
         } else {
             setShowYoungerJokes(false);
             setShowOlderJokes(false);
+        }
+    }
+
+    const signOutAndNavigate = async () => {
+        try {
+            // Sign out the user from Firebase
+            await signOut(auth);
+            localStorage.removeItem("auth"); // Remove user data from local storage
+            navigate("/"); // Navigate to the auth page
+        } catch (error) {
+            console.error("Error signing out:", error);
         }
     }
 
@@ -112,7 +126,7 @@ export const Main = () => {
     }
 
     return (
-        <div className='start-group'>
+        <div>
             <h1>Jokes!</h1>
             <p>Welcome to my joke website</p>
             <h2>Terms</h2>
@@ -172,6 +186,13 @@ export const Main = () => {
                     <button type="button" onClick={handleSubmit}>Submit Joke</button>
                 </div>
             )}
+
+            <div>
+                {/* Add a Sign Out button */}
+                <button onClick={signOutAndNavigate}>Sign Out</button>
+                {/* Rest of your component... */}
+            </div>
+
             {/* Display user-submitted jokes */}
             {/* {(showYoungerJokes || showOlderJokes) && (
                 <div>
