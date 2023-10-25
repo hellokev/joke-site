@@ -37,15 +37,24 @@
   }
 }
 
+body{
+  background-color: lightcyan;
+}
+
 .form-group {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  font-size: 30px;
-  background-color: cadetblue;
+  font-size: 25px;
+}
+.start-group{
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: lightcyan;
 }
 .start-group h1, h2{
+  
   font-size: 50px;
 }
 .start-group p{
+  
  font-size: 20px;
 }
 

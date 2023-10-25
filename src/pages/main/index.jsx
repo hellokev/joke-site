@@ -132,7 +132,7 @@ export const Main = () => {
             <h2>Terms</h2>
             <p>We require an age check to determine what types of jokes you will be able to view. Thank you!</p>
             <div className="form-group">
-                <label htmlFor="age-check">Age Requirement</label>
+                <label htmlFor="age-check">Age Requirement </label>
                 <select id="age-check" className="form-control" name="age" onChange={handleAgeChange} value={age}>
                     <option value="">None</option>
                     <option value="younger-18">Younger than 18</option>
