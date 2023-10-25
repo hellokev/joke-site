@@ -126,7 +126,7 @@ export const Main = () => {
     }
 
     return (
-        <div>
+        <div className='start-group'>
             <h1>Jokes!</h1>
             <p>Welcome to my joke website</p>
             <h2>Terms</h2>
