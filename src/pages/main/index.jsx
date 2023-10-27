@@ -142,14 +142,14 @@ export const Main = () => {
 
             {/* Conditionally render jokes based on the age selection */}
             {showYoungerJokes && (
-                <div className='joke-section-younger'>
+                <div className='joke-section'>
                     <h2>Jokes for Younger Than 18</h2>
                     <p>Rate what you think is your most favorite joke!!</p>
                     {userJokes.map((jokeObj, index) => (
                         jokeObj.age === "<18" ? (
-                            <div className='joke-text-section-younger' key={index}>
+                            <div className='joke-text-section' key={index}>
                                 <p>{jokeObj.joke}</p>
-                                <div>
+                                <div className='rateUser-section'>
                                     <button onClick={() => rateUserJoke(index, 1)}>Like</button>
                                     <button onClick={() => rateUserJoke(index, -1)}>Dislike</button>
                                 </div>
@@ -160,14 +160,14 @@ export const Main = () => {
                 </div>
             )}
             {showOlderJokes && (
-                <div className='joke-section-oLder'>
+                <div className='joke-section'>
                     <h2>Jokes for 18 and Older</h2>
                     <p>Rate what you think is your most favorite joke!!</p>
                     {userJokes.map((jokeObj, index) => (
                         jokeObj.age === "+18" ? (
-                            <div className='joke-text-section-older' key={index}>
+                            <div className='joke-text-section' key={index}>
                                 <p>{jokeObj.joke}</p>
-                                <div>
+                                <div className='rateUser-section'>
                                     <button onClick={() => rateUserJoke(index, 1)}>Like</button>
                                     <button onClick={() => rateUserJoke(index, -1)}>Dislike</button>
                                 </div>
@@ -180,7 +180,7 @@ export const Main = () => {
 
             {/* Allow users to input jokes */}
             {(showYoungerJokes || showOlderJokes) && (
-                <div>
+                <div className='submit-section'>
                     <h2>Submit Your Jokes</h2>
                     <input type="text" value={userJoke} onChange={handleUserJokeChange} />
                     <button type="button" onClick={handleSubmit}>Submit Joke</button>
