@@ -3,7 +3,7 @@ import { getDatabase, set, get, update, remove, ref, child } from "firebase/data
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../../config/firebase-config';
-
+import './main.css'
 
 export const Main = () => {
     const [age, setAge] = useState(""); 
@@ -142,12 +142,12 @@ export const Main = () => {
 
             {/* Conditionally render jokes based on the age selection */}
             {showYoungerJokes && (
-                <div>
+                <div className='joke-section-younger'>
                     <h2>Jokes for Younger Than 18</h2>
                     <p>Rate what you think is your most favorite joke!!</p>
                     {userJokes.map((jokeObj, index) => (
                         jokeObj.age === "<18" ? (
-                            <div key={index}>
+                            <div className='joke-text-section-younger' key={index}>
                                 <p>{jokeObj.joke}</p>
                                 <div>
                                     <button onClick={() => rateUserJoke(index, 1)}>Like</button>
@@ -160,12 +160,12 @@ export const Main = () => {
                 </div>
             )}
             {showOlderJokes && (
-                <div>
+                <div className='joke-section-oLder'>
                     <h2>Jokes for 18 and Older</h2>
                     <p>Rate what you think is your most favorite joke!!</p>
                     {userJokes.map((jokeObj, index) => (
                         jokeObj.age === "+18" ? (
-                            <div key={index}>
+                            <div className='joke-text-section-older' key={index}>
                                 <p>{jokeObj.joke}</p>
                                 <div>
                                     <button onClick={() => rateUserJoke(index, 1)}>Like</button>
