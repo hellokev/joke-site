@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getDatabase, set, get, push, update, remove, ref, child } from "firebase/database";
+import { getDatabase, set, get, push, update, remove, ref, child, onValue } from "firebase/database";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../../config/firebase-config';
@@ -48,6 +48,30 @@ export const Main = () => {
             setShowOlderJokes(false);
         }
     }
+
+  const fetchJokesFromFirebase = (age) => {
+    const jokePath = age === "older-18" ? `Jokes/older-18` : `Jokes/younger-18`;
+    const jokesRef = ref(db, jokePath);
+
+    onValue(jokesRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const jokesData = snapshot.val();
+        const jokesArray = Object.values(jokesData);
+        setUserJokes(jokesArray);
+      }
+    });
+  };
+
+  
+  useEffect(() => {
+    const user = getAuth().currentUser;
+
+    if (!user) {
+      navigate('/');
+    } else {
+      fetchJokesFromFirebase(age); 
+    }
+  }, [navigate, age]);
 
 
     const signOutAndNavigate = async () => {
