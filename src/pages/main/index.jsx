@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getDatabase, set, get, update, remove, ref, child } from "firebase/database";
+import { getDatabase, set, get, push, update, remove, ref, child } from "firebase/database";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../../config/firebase-config';
@@ -9,10 +9,26 @@ export const Main = () => {
     const [age, setAge] = useState(""); 
     const [showYoungerJokes, setShowYoungerJokes] = useState(false); 
     const [showOlderJokes, setShowOlderJokes] = useState(false); 
-    const [userJoke, setUserJoke] = useState(""); 
+    const [userJoke, setUserJoke] = useState("");
+    const [userComment, setUserComment] = useState("");
+    const [comments, setComments] = useState({}); // State to hold comments for each joke
+    const [userJokeImage, setUserJokeImage] = useState(null); 
     const [userJokes, setUserJokes] = useState([]); 
     const [jokeId, setJokeId] = useState(0);
+    const [sortMethod, setSortMethod] = useState("newest");
+    const [currentPage, setCurrentPage] = useState(1);
+    
+    const jokesPerPage = 10; // Number of jokes to display per page
     const navigate = useNavigate();
+
+    useEffect(() => { // Checks if user is signed in, if not send them to the login page.
+        const user = getAuth().currentUser;
+
+        if (!user) {
+            navigate('/');
+        } else {
+        }
+    }, [navigate]);
 
     const db = getDatabase();
 
@@ -31,6 +47,10 @@ export const Main = () => {
             setShowYoungerJokes(false);
             setShowOlderJokes(false);
         }
+    }
+
+    const handleUserJokeImageChange = (event) => {
+        setUserJokeImage(event.target.files[0]);
     }
 
     const signOutAndNavigate = async () => {
@@ -52,10 +72,13 @@ export const Main = () => {
                 id: jokeId,
                 joke: userJoke,
                 rating: 0,
-                age: "+18"
+                age: "+18",
+                date: new Date().toISOString(),
+                comments: [],
             };
             setUserJokes([...userJokes, newJoke]);
             setUserJoke("");
+            setUserJokeImage(null);
 
             set(ref(db, `Jokes/older-18/${newJoke.id}`), newJoke)
             .then(() => {
@@ -71,10 +94,12 @@ export const Main = () => {
                 id: jokeId,
                 joke: userJoke,
                 rating: 0,
-                age: "<18"
+                age: "<18",
+                date: new Date().toISOString(),
             };
             setUserJokes([...userJokes, newJoke]);
             setUserJoke("");
+            setUserJokeImage(null);
 
             set(ref(db, `Jokes/younger-18/${newJoke.id}`), newJoke)
             .then(() => {
@@ -83,6 +108,37 @@ export const Main = () => {
             .catch((error) => {
                 alert(error);
             });
+
+            setJokeId(jokeId + 1);
+        }
+    }
+
+    
+    const commentSubmit = (jokeId) => {
+        if (userComment.trim() !== "") {
+            const jokeRef = ref(db, `Jokes/${age}/${jokeId}/comments`);
+            const newCommentRef = push(jokeRef);
+
+            const newComment = {
+                id: newCommentRef.key,
+                comment: userComment,
+                date: new Date().toISOString(),
+            };
+
+            setComments({
+                ...comments,
+                [jokeId]: [...(comments[jokeId] || []), newComment],
+            });
+
+            set(newCommentRef, newComment)
+                .then(() => {
+                    alert('Comment has been submitted!');
+                    // Clear the comment text input after submission
+                    setUserComment("");
+                })
+                .catch((error) => {
+                    alert(error);
+                });
         }
     }
 
@@ -91,11 +147,16 @@ export const Main = () => {
         setUserJoke(event.target.value);
     }
 
+    const handleCommentChange = (event) => {
+        setUserComment(event.target.value);
+    }
+
     // Function to add user joke to the list
     const addUserJoke = () => {
         if (userJoke.trim() !== "") {
-            setUserJokes([...userJokes, { joke: userJoke, rating: null }]);
-            setUserJoke(""); // Clear the input field
+            setUserJokes([...userJokes, { joke: userJoke, image: userJokeImage, rating: null, age: age, date: new Date() }]);
+            setUserJoke(""); 
+            setUserJokeImage(null);
         }
     }
 
@@ -125,6 +186,29 @@ export const Main = () => {
         setUserJokes(updatedUserJokes);
     }
 
+    const handleSortChange = (event) => {
+        setSortMethod(event.target.value);
+    };
+
+
+    const sortedUserJokes = userJokes.slice().sort((a, b) => {
+        if (sortMethod === "newest") {
+            return b.date - a.date; 
+        } else if (sortMethod === "mostLikes") {
+            return (b.rating || 0) - (a.rating || 0); 
+        }
+        return 0;
+    });
+
+    const indexOfLastJoke = currentPage * jokesPerPage;
+    const indexOfFirstJoke = indexOfLastJoke - jokesPerPage;
+    const currentJokes = sortedUserJokes.slice(indexOfFirstJoke, indexOfLastJoke);
+
+    function formatHumanReadableDate(dateString) {
+        const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+        return new Date(dateString).toLocaleString(undefined, options);
+    }
+
     return (
         <div className='start-group'>
             <h1>Jokes!</h1>
@@ -140,6 +224,20 @@ export const Main = () => {
                 </select>
             </div>
 
+            <div className="form-group">
+                <label htmlFor="sort-method">Sort By:</label>
+                <select id="sort-method" className="form-control" name="sortMethod" onChange={handleSortChange} value={sortMethod}>
+                    <option value="newest">Newest</option>
+                    <option value="mostLikes">Most Likes</option>
+                </select>
+            </div>
+
+            <div className="pagination">
+                {Array.from({ length: Math.ceil(sortedUserJokes.length / jokesPerPage) }, (_, i) => (
+                    <button key={i} onClick={() => setCurrentPage(i + 1)}>{i + 1}</button>
+                ))}
+            </div>
+
             {/* Conditionally render jokes based on the age selection */}
             {showYoungerJokes && (
                 <div className='joke-section'>
@@ -148,12 +246,33 @@ export const Main = () => {
                     {userJokes.map((jokeObj, index) => (
                         jokeObj.age === "<18" ? (
                             <div className='joke-text-section' key={index}>
+                            <hr></hr>
+
                                 <p>{jokeObj.joke}</p>
                                 <div className='rateUser-section'>
                                     <button onClick={() => rateUserJoke(index, 1)}>Like</button>
                                     <button onClick={() => rateUserJoke(index, -1)}>Dislike</button>
                                 </div>
                                 <p>Rating: {jokeObj.rating === null ? "Not Rated" : jokeObj.rating}</p>
+
+                                {comments[jokeObj.id] && (
+                                    <div>
+                                        <h4>Comments:</h4>
+                                        {comments[jokeObj.id].map((comment, commentIndex) => (
+                                            <div key={commentIndex}>
+                                                <p>{comment.comment}</p>
+                                                <h5>{formatHumanReadableDate(comment.date)}</h5>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                <h3>Leave a comment</h3>
+                                <div>
+                                    <input type="text" value={userComment} onChange={handleCommentChange} />
+                                    <button type="button" onClick={() => commentSubmit(jokeObj.id)}>Submit Comment</button>
+                                </div>
+                                
                             </div>
                         ) : null
                     ))}
@@ -166,12 +285,33 @@ export const Main = () => {
                     {userJokes.map((jokeObj, index) => (
                         jokeObj.age === "+18" ? (
                             <div className='joke-text-section' key={index}>
+                            <hr></hr>
+
                                 <p>{jokeObj.joke}</p>
                                 <div className='rateUser-section'>
                                     <button onClick={() => rateUserJoke(index, 1)}>Like</button>
                                     <button onClick={() => rateUserJoke(index, -1)}>Dislike</button>
                                 </div>
                                 <p>Rating: {jokeObj.rating === null ? "Not Rated" : jokeObj.rating}</p>
+                                
+                                {comments[jokeObj.id] && (
+                                    <div>
+                                        <h4>Comments:</h4>
+                                        {comments[jokeObj.id].map((comment, commentIndex) => (
+                                            <div key={commentIndex}>
+                                                <p>{comment.comment}</p>
+                                                <h5>{formatHumanReadableDate(comment.date)}</h5>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                <h3>Leave a comment</h3>
+                                <div>
+                                    <input type="text" value={userComment} onChange={handleCommentChange} />
+                                    <button type="button" onClick={() => commentSubmit(jokeObj.id)}>Submit Comment</button>
+                                </div>
+
                             </div>
                         ) : null
                     ))}
@@ -183,48 +323,15 @@ export const Main = () => {
                 <div className='submit-section'>
                     <h2>Submit Your Jokes</h2>
                     <input type="text" value={userJoke} onChange={handleUserJokeChange} />
+                    <input type="file" accept=".jpg, .jpeg, .png, .gif" onChange={handleUserJokeImageChange} />
                     <button type="button" onClick={handleSubmit}>Submit Joke</button>
                 </div>
             )}
-
             <div className='signout'>
                 {/* Add a Sign Out button */}
                 <button className="signout-button" onClick={signOutAndNavigate}>Sign Out</button>
                 {/* Rest of your component... */}
             </div>
-
-            {/* Display user-submitted jokes */}
-            {/* {(showYoungerJokes || showOlderJokes) && (
-                <div>
-                    <h2>User-Submitted Jokes</h2>  
-                    {userJokes.map((jokeObj, index) => (
-                        <div key={index}>
-                            <p>{jokeObj.joke}</p>
-                            <div>
-                                <button onClick={() => rateUserJoke(index, 1)}>Like</button>
-                                <button onClick={() => rateUserJoke(index, -1)}>Dislike</button>
-                            </div>
-                            <p>Rating: {jokeObj.rating === null ? "Not Rated" : jokeObj.rating}</p>
-                        </div>
-                    ))}
-                </div>
-            )} */}
         </div>
     );
 }
-
-/* BUGS:
--Ratings not updating into Firebase
--*/
-
-/* CHANGES:
-BACKEND:
-    -Added jokes to Firebase database categorized by age group.
-        -Created two categories, "older-18" and "younger-18," to segregate jokes based on the age group.
-        -Added jokes to the "older-18" category with age "+18" and corresponding IDs, jokes, and initial ratings.
-        -Added jokes to the "younger-18" category with age "<18" and corresponding IDs, jokes, and initial ratings.
-FRONTEND:
-    -The younger/older joke filter wasn't working for me probably cause I broke the code some how but I added some changes to it so that it actually displays in this current code.
-    -Commented out "Display User-Submitted Jokes" for the meantime because it the filters weren't working for it.
-*/
-
