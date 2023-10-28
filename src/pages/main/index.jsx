@@ -49,9 +49,6 @@ export const Main = () => {
         }
     }
 
-    const handleUserJokeImageChange = (event) => {
-        setUserJokeImage(event.target.files[0]);
-    }
 
     const signOutAndNavigate = async () => {
         try {
@@ -137,7 +134,7 @@ export const Main = () => {
     // Function to add user joke to the list
     const addUserJoke = () => {
         if (userJoke.trim() !== "") {
-            setUserJokes([...userJokes, { joke: userJoke, image: userJokeImage, rating: null, age: age, date: new Date() }]);
+            setUserJokes([...userJokes, { joke: userJoke, rating: null, age: age, date: new Date() }]);
             setUserJoke(""); 
             setUserJokeImage(null);
         }
@@ -221,6 +218,15 @@ export const Main = () => {
                 ))}
             </div>
 
+ {/* Allow users to input jokes */}
+ {(showYoungerJokes || showOlderJokes) && (
+                <div className='submit-section'>
+                    <h2>Submit Your Jokes</h2>
+                    <input type="text" value={userJoke} onChange={handleUserJokeChange} />
+                    <button type="button" onClick={handleSubmit}>Submit Joke</button>
+                </div>
+            )}
+
             {/* Conditionally render jokes based on the age selection */}
             {showYoungerJokes && (
                 <div className='joke-section'>
@@ -268,7 +274,6 @@ export const Main = () => {
                     {userJokes.map((jokeObj, index) => (
                         jokeObj.age === "+18" ? (
                             <div className='joke-text-section' key={index}>
-                            <hr></hr>
 
                                 <p>{jokeObj.joke}</p>
                                 <div className='rateUser-section'>
@@ -301,19 +306,9 @@ export const Main = () => {
                 </div>
             )}
 
-            {/* Allow users to input jokes */}
-            {(showYoungerJokes || showOlderJokes) && (
-                <div className='submit-section'>
-                    <h2>Submit Your Jokes</h2>
-                    <input type="text" value={userJoke} onChange={handleUserJokeChange} />
-                    <input type="file" accept=".jpg, .jpeg, .png, .gif" onChange={handleUserJokeImageChange} />
-                    <button type="button" onClick={handleSubmit}>Submit Joke</button>
-                </div>
-            )}
+        
             <div className='signout'>
-                {/* Add a Sign Out button */}
                 <button className="signout-button" onClick={signOutAndNavigate}>Sign Out</button>
-                {/* Rest of your component... */}
             </div>
         </div>
     );
