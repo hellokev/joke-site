@@ -67,48 +67,31 @@ export const Main = () => {
     // Function to handle form submission
     // This code is connected to the Firebase Database and stores jokes in a form of JSON into jokes/older-18 or jokes/younger-18.
     const handleSubmit = () => {
-        if (userJoke.trim() !== "" && age === "older-18") {
+        if (userJoke.trim() !== "") {
             const newJoke = {
                 id: jokeId,
                 joke: userJoke,
                 rating: 0,
-                age: "+18",
+                age: age === "older-18" ? "+18" : "<18",
                 date: new Date().toISOString(),
                 comments: [],
             };
-            setUserJokes([...userJokes, newJoke]);
+    
+            // Prepend the new joke to the array
+            setUserJokes([newJoke, ...userJokes]);
             setUserJoke("");
             setUserJokeImage(null);
-
-            set(ref(db, `Jokes/older-18/${newJoke.id}`), newJoke)
-            .then(() => {
-                alert("Joke has been submitted!");
-            })
-            .catch((error) => {
-                alert(error);
-            });
-
-            setJokeId(jokeId + 1);
-        } else if (userJoke.trim() !== "" && age === "younger-18"){
-            const newJoke = {
-                id: jokeId,
-                joke: userJoke,
-                rating: 0,
-                age: "<18",
-                date: new Date().toISOString(),
-            };
-            setUserJokes([...userJokes, newJoke]);
-            setUserJoke("");
-            setUserJokeImage(null);
-
-            set(ref(db, `Jokes/younger-18/${newJoke.id}`), newJoke)
-            .then(() => {
-                alert("Joke has been submitted!");
-            })
-            .catch((error) => {
-                alert(error);
-            });
-
+    
+            // Update the database
+            const jokePath = age === "older-18" ? `Jokes/older-18` : `Jokes/younger-18`;
+            set(ref(db, `${jokePath}/${newJoke.id}`), newJoke)
+                .then(() => {
+                    alert("Joke has been submitted!");
+                })
+                .catch((error) => {
+                    alert(error);
+                });
+    
             setJokeId(jokeId + 1);
         }
     }
