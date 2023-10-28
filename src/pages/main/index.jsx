@@ -170,12 +170,25 @@ export const Main = () => {
         setSortMethod(event.target.value);
     };
 
-
+    useEffect(() => {
+        const sortedJokes = userJokes.slice().sort((a, b) => {
+            if (sortMethod === "newest") {
+                return new Date(b.date) - new Date(a.date);
+            } else if (sortMethod === "mostLikes") {
+                return (b.rating || 0) - (a.rating || 0);
+            }
+            return 0;
+        });
+    
+        setUserJokes(sortedJokes);
+    }, [sortMethod, userJokes]);
+    
+    
     const sortedUserJokes = userJokes.slice().sort((a, b) => {
         if (sortMethod === "newest") {
-            return b.date - a.date; 
+            return new Date(b.date) - new Date(a.date);
         } else if (sortMethod === "mostLikes") {
-            return (b.rating || 0) - (a.rating || 0); 
+            return (b.rating || 0) - (a.rating || 0);
         }
         return 0;
     });
