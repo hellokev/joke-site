@@ -18,6 +18,15 @@ export const Main = () => {
     const jokesPerPage = 10; // Number of jokes to display per page
     const navigate = useNavigate();
 
+    useEffect(() => { // Checks if user is signed in, if not send them to the login page.
+        const user = getAuth().currentUser;
+
+        if (!user) {
+            navigate('/');
+        } else {
+        }
+    }, [navigate]);
+
     const db = getDatabase();
 
     const handleAgeChange = (event) => {
