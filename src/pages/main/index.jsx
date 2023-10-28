@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getDatabase, set, get, update, remove, ref, child } from "firebase/database";
+import { getDatabase, set, get, push, update, remove, ref, child } from "firebase/database";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../../config/firebase-config';
@@ -10,11 +10,14 @@ export const Main = () => {
     const [showYoungerJokes, setShowYoungerJokes] = useState(false); 
     const [showOlderJokes, setShowOlderJokes] = useState(false); 
     const [userJoke, setUserJoke] = useState("");
+    const [userComment, setUserComment] = useState("");
+    const [comments, setComments] = useState({}); // State to hold comments for each joke
     const [userJokeImage, setUserJokeImage] = useState(null); 
     const [userJokes, setUserJokes] = useState([]); 
     const [jokeId, setJokeId] = useState(0);
     const [sortMethod, setSortMethod] = useState("newest");
     const [currentPage, setCurrentPage] = useState(1);
+    
     const jokesPerPage = 10; // Number of jokes to display per page
     const navigate = useNavigate();
 
@@ -71,6 +74,7 @@ export const Main = () => {
                 rating: 0,
                 age: "+18",
                 date: new Date().toISOString(),
+                comments: [],
             };
             setUserJokes([...userJokes, newJoke]);
             setUserJoke("");
@@ -104,12 +108,47 @@ export const Main = () => {
             .catch((error) => {
                 alert(error);
             });
+
+            setJokeId(jokeId + 1);
+        }
+    }
+
+    
+    const commentSubmit = (jokeId) => {
+        if (userComment.trim() !== "") {
+            const jokeRef = ref(db, `Jokes/${age}/${jokeId}/comments`);
+            const newCommentRef = push(jokeRef);
+
+            const newComment = {
+                id: newCommentRef.key,
+                comment: userComment,
+                date: new Date().toISOString(),
+            };
+
+            setComments({
+                ...comments,
+                [jokeId]: [...(comments[jokeId] || []), newComment],
+            });
+
+            set(newCommentRef, newComment)
+                .then(() => {
+                    alert('Comment has been submitted!');
+                    // Clear the comment text input after submission
+                    setUserComment("");
+                })
+                .catch((error) => {
+                    alert(error);
+                });
         }
     }
 
     // Function to handle user joke input
     const handleUserJokeChange = (event) => {
         setUserJoke(event.target.value);
+    }
+
+    const handleCommentChange = (event) => {
+        setUserComment(event.target.value);
     }
 
     // Function to add user joke to the list
@@ -165,6 +204,11 @@ export const Main = () => {
     const indexOfFirstJoke = indexOfLastJoke - jokesPerPage;
     const currentJokes = sortedUserJokes.slice(indexOfFirstJoke, indexOfLastJoke);
 
+    function formatHumanReadableDate(dateString) {
+        const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+        return new Date(dateString).toLocaleString(undefined, options);
+    }
+
     return (
         <div>
             <h1>Jokes!</h1>
@@ -202,12 +246,32 @@ export const Main = () => {
                     {userJokes.map((jokeObj, index) => (
                         jokeObj.age === "<18" ? (
                             <div key={index}>
+                            <hr></hr>
                                 <p>{jokeObj.joke}</p>
                                 <div>
                                     <button onClick={() => rateUserJoke(index, 1)}>Like</button>
                                     <button onClick={() => rateUserJoke(index, -1)}>Dislike</button>
                                 </div>
                                 <p>Rating: {jokeObj.rating === null ? "Not Rated" : jokeObj.rating}</p>
+
+                                {comments[jokeObj.id] && (
+                                    <div>
+                                        <h4>Comments:</h4>
+                                        {comments[jokeObj.id].map((comment, commentIndex) => (
+                                            <div key={commentIndex}>
+                                                <p>{comment.comment}</p>
+                                                <h5>{formatHumanReadableDate(comment.date)}</h5>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                <h3>Leave a comment</h3>
+                                <div>
+                                    <input type="text" value={userComment} onChange={handleCommentChange} />
+                                    <button type="button" onClick={() => commentSubmit(jokeObj.id)}>Submit Comment</button>
+                                </div>
+                                
                             </div>
                         ) : null
                     ))}
@@ -220,12 +284,32 @@ export const Main = () => {
                     {userJokes.map((jokeObj, index) => (
                         jokeObj.age === "+18" ? (
                             <div key={index}>
+                            <hr></hr>
                                 <p>{jokeObj.joke}</p>
                                 <div>
                                     <button onClick={() => rateUserJoke(index, 1)}>Like</button>
                                     <button onClick={() => rateUserJoke(index, -1)}>Dislike</button>
                                 </div>
                                 <p>Rating: {jokeObj.rating === null ? "Not Rated" : jokeObj.rating}</p>
+                                
+                                {comments[jokeObj.id] && (
+                                    <div>
+                                        <h4>Comments:</h4>
+                                        {comments[jokeObj.id].map((comment, commentIndex) => (
+                                            <div key={commentIndex}>
+                                                <p>{comment.comment}</p>
+                                                <h5>{formatHumanReadableDate(comment.date)}</h5>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                <h3>Leave a comment</h3>
+                                <div>
+                                    <input type="text" value={userComment} onChange={handleCommentChange} />
+                                    <button type="button" onClick={() => commentSubmit(jokeObj.id)}>Submit Comment</button>
+                                </div>
+
                             </div>
                         ) : null
                     ))}
