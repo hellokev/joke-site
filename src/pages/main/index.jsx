@@ -3,7 +3,7 @@ import { getDatabase, set, get, push, update, remove, ref, child } from "firebas
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../../config/firebase-config';
-
+import './main.css'
 
 export const Main = () => {
     const [age, setAge] = useState(""); 
@@ -210,13 +210,13 @@ export const Main = () => {
     }
 
     return (
-        <div>
+        <div className='start-group'>
             <h1>Jokes!</h1>
             <p>Welcome to my joke website</p>
             <h2>Terms</h2>
             <p>We require an age check to determine what types of jokes you will be able to view. Thank you!</p>
             <div className="form-group">
-                <label htmlFor="age-check">Age Requirement</label>
+                <label htmlFor="age-check">Age Requirement </label>
                 <select id="age-check" className="form-control" name="age" onChange={handleAgeChange} value={age}>
                     <option value="">None</option>
                     <option value="younger-18">Younger than 18</option>
@@ -240,15 +240,16 @@ export const Main = () => {
 
             {/* Conditionally render jokes based on the age selection */}
             {showYoungerJokes && (
-                <div>
+                <div className='joke-section'>
                     <h2>Jokes for Younger Than 18</h2>
                     <p>Rate what you think is your most favorite joke!!</p>
                     {userJokes.map((jokeObj, index) => (
                         jokeObj.age === "<18" ? (
-                            <div key={index}>
+                            <div className='joke-text-section' key={index}>
                             <hr></hr>
+
                                 <p>{jokeObj.joke}</p>
-                                <div>
+                                <div className='rateUser-section'>
                                     <button onClick={() => rateUserJoke(index, 1)}>Like</button>
                                     <button onClick={() => rateUserJoke(index, -1)}>Dislike</button>
                                 </div>
@@ -278,15 +279,16 @@ export const Main = () => {
                 </div>
             )}
             {showOlderJokes && (
-                <div>
+                <div className='joke-section'>
                     <h2>Jokes for 18 and Older</h2>
                     <p>Rate what you think is your most favorite joke!!</p>
                     {userJokes.map((jokeObj, index) => (
                         jokeObj.age === "+18" ? (
-                            <div key={index}>
+                            <div className='joke-text-section' key={index}>
                             <hr></hr>
+
                                 <p>{jokeObj.joke}</p>
-                                <div>
+                                <div className='rateUser-section'>
                                     <button onClick={() => rateUserJoke(index, 1)}>Like</button>
                                     <button onClick={() => rateUserJoke(index, -1)}>Dislike</button>
                                 </div>
@@ -318,16 +320,17 @@ export const Main = () => {
 
             {/* Allow users to input jokes */}
             {(showYoungerJokes || showOlderJokes) && (
-                <div>
+                <div className='submit-section'>
                     <h2>Submit Your Jokes</h2>
                     <input type="text" value={userJoke} onChange={handleUserJokeChange} />
                     <input type="file" accept=".jpg, .jpeg, .png, .gif" onChange={handleUserJokeImageChange} />
                     <button type="button" onClick={handleSubmit}>Submit Joke</button>
                 </div>
             )}
-
-            <div>
-                <button onClick={signOutAndNavigate}>Sign Out</button>
+            <div className='signout'>
+                {/* Add a Sign Out button */}
+                <button className="signout-button" onClick={signOutAndNavigate}>Sign Out</button>
+                {/* Rest of your component... */}
             </div>
         </div>
     );

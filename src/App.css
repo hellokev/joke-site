@@ -36,3 +36,46 @@
     transform: rotate(360deg);
   }
 }
+
+body{
+  background-color: lightcyan;
+}
+
+.login-page p{
+ font-size: 30px;
+ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.google-login{
+  font-size: 30px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+ }
+
+/*.form-group {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 25px;
+}
+.form-control{
+  font-size: 20px;
+}
+.start-group{
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.start-group h1, h2{
+  
+  font-size: 50px;
+}
+.start-group p{
+  
+ font-size: 20px;
+}
+.signout{
+  padding: 15px;
+}
+.signout-button{
+  font-size: 20px;
+}
+*/
+.login-page{
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
