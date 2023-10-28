@@ -325,9 +325,7 @@ export const Main = () => {
 
         
             <div className='signout'>
-                {/* Add a Sign Out button */}
                 <button className="signout-button" onClick={signOutAndNavigate}>Sign Out</button>
-                {/* Rest of your component... */}
             </div>
         </div>
     );
